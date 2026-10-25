@@ -405,6 +405,20 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
     }
   }, [price, currentConfig, onAddToCart]);
 
+  useEffect(() => {
+    const keyDownHandler = (e: globalThis.KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'enter') {
+        e.preventDefault();
+        handleQuickAdd();
+      }
+    };
+    window.addEventListener('keydown', keyDownHandler);
+
+    return () => {
+      window.removeEventListener('keydown', keyDownHandler);
+    };
+  }, [price, currentConfig, onAddToCart]);
+
   const handleCopyShareUrl = useCallback(() => {
     navigator.clipboard
       .writeText(shareUrl)
