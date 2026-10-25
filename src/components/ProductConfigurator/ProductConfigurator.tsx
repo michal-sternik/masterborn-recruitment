@@ -153,6 +153,8 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const lastFocusedElement = useRef<HTMLElement | null>(null);
+  const shareModalRef = useRef<HTMLDivElement>(null);
+  const draftsRef = useRef<HTMLDivElement>(null);
 
   // -------------------------------------------------------------------------
   // Derived State
@@ -262,6 +264,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   useEffect(() => {
     if (showDraftModal) {
       getAllDrafts().then(setDrafts);
+      draftsRef.current?.focus();
     }
   }, [showDraftModal]);
 
@@ -270,6 +273,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
       const encoded = encodeConfigurationToUrl(currentConfig);
       const url = `${window.location.origin}${window.location.pathname}?config=${encoded}`;
       setShareUrl(url);
+      shareModalRef.current?.focus();
     }
   }, [showShareModal, currentConfig]);
 
@@ -504,7 +508,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
           aria-label={option.name}
         >
           {option.choices?.map((choice, index) => (
-            <div
+            <button
               key={index}
               className={`color-swatch ${currentValue === choice.value ? 'selected' : ''}`}
               style={{ backgroundColor: choice.colorHex }}
@@ -705,6 +709,8 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
         className="modal-overlay"
         onClick={() => handleModalClose('draft')}
         onKeyDown={(e) => handleModalKeyDown(e, 'draft')}
+        ref={draftsRef}
+        tabIndex={-1}
       >
         <div className="modal" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
@@ -787,6 +793,8 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
         className="modal-overlay"
         onClick={() => handleModalClose('share')}
         onKeyDown={(e) => handleModalKeyDown(e, 'share')}
+        ref={shareModalRef}
+        tabIndex={-1}
       >
         <div className="modal" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
