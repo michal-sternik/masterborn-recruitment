@@ -52,7 +52,10 @@ export function usePriceCalculation(
     try {
       const response: PriceResponse = await calculatePrice(config, product);
 
-      if (response.timestamp >= latestRequestRef.current) {
+      if (
+        response.timestamp >= latestRequestRef.current &&
+        requestTime === latestRequestRef.current
+      ) {
         setPrice(response.breakdown);
         setFormattedTotal(response.formattedTotal);
       }
