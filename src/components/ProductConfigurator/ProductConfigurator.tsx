@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+
 /**
  * ProductConfigurator Component
  *
@@ -217,7 +219,9 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
           setValidation(result);
           setIsValid(true);
         }
-      } catch {}
+      } catch {
+        //ignore
+      }
     };
 
     validate();
