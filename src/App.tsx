@@ -4,9 +4,9 @@ import { mockProduct } from './data/mockProduct';
 import type { Configuration, PriceBreakdown } from './components/ProductConfigurator/types';
 
 function App() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleConfigurationChange = useCallback((config: Configuration) => {
     // In a real app, you might sync this with a parent state or analytics
-    console.log('Configuration updated:', config);
   }, []);
 
   const handleAddToCart = useCallback((config: Configuration, price: PriceBreakdown) => {
