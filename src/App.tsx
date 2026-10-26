@@ -5,7 +5,7 @@ import type { Configuration, PriceBreakdown } from './components/ProductConfigur
 
 function App() {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const handleConfigurationChange = useCallback((config: Configuration) => {
+  const handleConfigurationChange = useCallback((_config: Configuration) => {
     // In a real app, you might sync this with a parent state or analytics
   }, []);
 
