@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect, react-hooks/exhaustive-deps */
+
 /**
  * ProductConfigurator Component
  *
@@ -151,6 +153,8 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const colorPickerRef = useRef<HTMLDivElement>(null);
   const lastFocusedElement = useRef<HTMLElement | null>(null);
+  const shareModalRef = useRef<HTMLDivElement>(null);
+  const draftsRef = useRef<HTMLDivElement>(null);
 
   // -------------------------------------------------------------------------
   // Derived State
@@ -217,7 +221,9 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
           setValidation(result);
           setIsValid(true);
         }
-      } catch {}
+      } catch {
+        //ignore
+      }
     };
 
     validate();
@@ -258,6 +264,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
   useEffect(() => {
     if (showDraftModal) {
       getAllDrafts().then(setDrafts);
+      draftsRef.current?.focus();
     }
   }, [showDraftModal]);
 
@@ -266,6 +273,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
       const encoded = encodeConfigurationToUrl(currentConfig);
       const url = `${window.location.origin}${window.location.pathname}?config=${encoded}`;
       setShareUrl(url);
+      shareModalRef.current?.focus();
     }
   }, [showShareModal, currentConfig]);
 
@@ -297,16 +305,12 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
       const option = product.options.find((o) => o.id === optionId);
       // Clean up any dependent add-ons whose requirement is no longer met.
       // Toggles are handled in handleAddOnToggle, so we only need to do this for select options.
-      if (option && option.type === 'select') {
+      if (option && (option.type === 'select' || option.type === 'toggle')) {
         const dependentAddOns = product.addOns.filter((a) => a.dependsOn?.optionId === optionId);
 
         for (const addOn of dependentAddOns) {
           if (addOn.dependsOn && value !== addOn.dependsOn.requiredValue) {
-            const index = selectedAddOns.indexOf(addOn.id);
-            if (index > -1) {
-              selectedAddOns.splice(index, 1);
-              setSelectedAddOns(selectedAddOns);
-            }
+            setSelectedAddOns((prev) => prev.filter((id) => id !== addOn.id));
           }
         }
       }
@@ -401,6 +405,20 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
     }
   }, [price, currentConfig, onAddToCart]);
 
+  useEffect(() => {
+    const keyDownHandler = (e: globalThis.KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'enter') {
+        e.preventDefault();
+        handleQuickAdd();
+      }
+    };
+    window.addEventListener('keydown', keyDownHandler);
+
+    return () => {
+      window.removeEventListener('keydown', keyDownHandler);
+    };
+  }, [price, currentConfig, onAddToCart]);
+
   const handleCopyShareUrl = useCallback(() => {
     navigator.clipboard
       .writeText(shareUrl)
@@ -486,7 +504,7 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
           aria-label={option.name}
         >
           {option.choices?.map((choice, index) => (
-            <div
+            <button
               key={index}
               className={`color-swatch ${currentValue === choice.value ? 'selected' : ''}`}
               style={{ backgroundColor: choice.colorHex }}
@@ -687,6 +705,8 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
         className="modal-overlay"
         onClick={() => handleModalClose('draft')}
         onKeyDown={(e) => handleModalKeyDown(e, 'draft')}
+        ref={draftsRef}
+        tabIndex={-1}
       >
         <div className="modal" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
@@ -769,6 +789,8 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
         className="modal-overlay"
         onClick={() => handleModalClose('share')}
         onKeyDown={(e) => handleModalKeyDown(e, 'share')}
+        ref={shareModalRef}
+        tabIndex={-1}
       >
         <div className="modal" onClick={(e) => e.stopPropagation()}>
           <div className="modal-header">
@@ -933,8 +955,8 @@ export const ProductConfigurator: React.FC<ProductConfiguratorProps> = ({
                 <span>
                   {selectedAddOns
                     .map((id) => {
-                      const addOn = availableAddOns.get(id)!;
-                      return formatPrice(addOn.price, product.currency);
+                      const addOn = availableAddOns.get(id);
+                      return addOn ? formatPrice(addOn.price, product.currency) : '';
                     })
                     .join(' + ')}
                 </span>

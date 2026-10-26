@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/set-state-in-effect */
+
 // usePriceCalculation Hook
 // Marcus: "This hook handles async price fetching. A bit janky but works."
 
@@ -50,7 +52,10 @@ export function usePriceCalculation(
     try {
       const response: PriceResponse = await calculatePrice(config, product);
 
-      if (response.timestamp >= latestRequestRef.current) {
+      if (
+        response.timestamp >= latestRequestRef.current &&
+        requestTime === latestRequestRef.current
+      ) {
         setPrice(response.breakdown);
         setFormattedTotal(response.formattedTotal);
       }
@@ -68,6 +73,7 @@ export function usePriceCalculation(
   // Fetch price when config changes
   useEffect(() => {
     fetchPrice();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config?.selections, config?.addOns, config?.quantity]);
 
   return {

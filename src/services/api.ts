@@ -18,9 +18,6 @@ const randomDelay = (min: number, max: number): Promise<void> => {
   return new Promise((resolve) => setTimeout(resolve, delay));
 };
 
-// Track request IDs for debugging (and to create the race condition bug)
-let requestCounter = 0;
-
 /**
  * Calculate price for a configuration
  * Returns pricing breakdown after "server-side" calculation
@@ -29,18 +26,15 @@ export async function calculatePrice(
   config: Configuration,
   product: Product,
 ): Promise<PriceResponse> {
-  const requestId = ++requestCounter;
-
   // Simulate variable network latency (this is intentional for the race condition bug)
   // Sometimes fast, sometimes slow - creates out-of-order responses
   await randomDelay(150, 800);
 
   const breakdown = calculatePriceBreakdown(config, product);
-
   return {
     breakdown,
     formattedTotal: formatCurrency(breakdown.total, product.currency),
-    timestamp: requestId,
+    timestamp: Date.now(),
   };
 }
 
